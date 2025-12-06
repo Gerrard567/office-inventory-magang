@@ -81,6 +81,44 @@ function App() {
         }
     };
 
+    // Special handler for AI Input to merge duplicates
+    const handleAiAddItem = async (newItem) => {
+        try {
+            // Check if item already exists (case-insensitive)
+            const existingItem = items.find(
+                item => item.name.toLowerCase().trim() === newItem.name.toLowerCase().trim()
+            );
+
+            if (existingItem) {
+                // Update existing item
+                const itemRef = doc(db, 'inventory', existingItem.id);
+                // Calculate new quantity
+                const quantityChange = parseInt(newItem.quantity) || 0;
+                let newQuantity = (parseInt(existingItem.quantity) || 0) + quantityChange;
+
+                // Prevent negative stock
+                if (newQuantity < 0) {
+                    alert(`Gagal: Stok tidak cukup! Stok saat ini: ${existingItem.quantity}, diminta keluar: ${Math.abs(quantityChange)}`);
+                    return;
+                }
+
+                await updateDoc(itemRef, {
+                    quantity: newQuantity,
+                });
+
+                const action = quantityChange > 0 ? "ditambahkan ke" : "dikurangi dari";
+                alert(`Stok barang "${existingItem.name}" berhasil ${action} inventaris.`);
+            } else {
+                // Create new item
+                await addDoc(collection(db, 'inventory'), newItem);
+                alert(`Barang baru "${newItem.name}" berhasil dibuat!`);
+            }
+        } catch (error) {
+            console.error("Error processing AI item:", error);
+            alert("Gagal memproses barang dari AI");
+        }
+    };
+
     const handleUpdateItem = async (updatedItem) => {
         try {
             const itemRef = doc(db, 'inventory', editingItem.id);
@@ -197,7 +235,7 @@ function App() {
             <AiInputModal
                 isOpen={isAiModalOpen}
                 onClose={() => setIsAiModalOpen(false)}
-                onAddItems={handleAddItem}
+                onAddItems={handleAiAddItem}
             />
 
             <CategoryManagerModal

@@ -11,7 +11,7 @@ export const parseInventoryInput = async (text) => {
       Return ONLY a JSON object with these fields: 
       - name (string)
       - category (string, try to match one of: ATK, Pantry, Elektronik, Aset, Lainnya. Default to Lainnya if unsure)
-      - quantity (number)
+      - quantity (number. IMPORTANT: Make this NEGATIVE if the text implies removing, taking, or using items. Example: "ambil 5" -> -5, "barang keluar 2" -> -2)
       - unit (string, e.g., Pcs, Rim, Unit, Box)
       - minStock (number, default to 5 if not specified)
       
