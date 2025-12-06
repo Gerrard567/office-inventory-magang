@@ -8,8 +8,10 @@ import InventoryTable from './components/inventory/InventoryTable';
 import ItemFormModal from './components/modals/ItemFormModal';
 import AiInputModal from './components/modals/AiInputModal';
 import CategoryManagerModal from './components/modals/CategoryManagerModal';
+import ConfirmationModal from './components/modals/ConfirmationModal';
 import Login from './components/auth/Login';
 import LoadingSpinner from './components/ui/LoadingSpinner';
+import Notification from './components/ui/Notification';
 
 const DEFAULT_CATEGORIES = ['ATK', 'Pantry', 'Elektronik', 'Aset', 'Lainnya'];
 
@@ -30,6 +32,14 @@ function App() {
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
+
+    // Notifications & Confirmations
+    const [notification, setNotification] = useState(null);
+    const [deleteConfig, setDeleteConfig] = useState({ isOpen: false, itemId: null });
+
+    const showNotification = (message, type = 'success') => {
+        setNotification({ message, type, id: Date.now() });
+    };
 
     // Auth Listener
     useEffect(() => {
@@ -58,6 +68,7 @@ function App() {
         }, (error) => {
             console.error("Error fetching inventory:", error);
             setLoading(false);
+            showNotification("Gagal memuat data inventaris", "error");
         });
 
         return () => unsubscribe();
@@ -75,9 +86,10 @@ function App() {
     const handleAddItem = async (newItem) => {
         try {
             await addDoc(collection(db, 'inventory'), newItem);
+            showNotification(`Barang "${newItem.name}" berhasil ditambahkan!`, "success");
         } catch (error) {
             console.error("Error adding item:", error);
-            alert("Gagal menambahkan barang");
+            showNotification("Gagal menambahkan barang", "error");
         }
     };
 
@@ -98,7 +110,7 @@ function App() {
 
                 // Prevent negative stock
                 if (newQuantity < 0) {
-                    alert(`Gagal: Stok tidak cukup! Stok saat ini: ${existingItem.quantity}, diminta keluar: ${Math.abs(quantityChange)}`);
+                    showNotification(`Gagal: Stok tidak cukup! Stok saat ini: ${existingItem.quantity}, diminta keluar: ${Math.abs(quantityChange)}`, "error");
                     return;
                 }
 
@@ -107,15 +119,15 @@ function App() {
                 });
 
                 const action = quantityChange > 0 ? "ditambahkan ke" : "dikurangi dari";
-                alert(`Stok barang "${existingItem.name}" berhasil ${action} inventaris.`);
+                showNotification(`Stok barang "${existingItem.name}" berhasil ${action} inventaris.`, "success");
             } else {
                 // Create new item
                 await addDoc(collection(db, 'inventory'), newItem);
-                alert(`Barang baru "${newItem.name}" berhasil dibuat!`);
+                showNotification(`Barang baru "${newItem.name}" berhasil dibuat!`, "success");
             }
         } catch (error) {
             console.error("Error processing AI item:", error);
-            alert("Gagal memproses barang dari AI");
+            showNotification("Gagal memproses barang dari AI", "error");
         }
     };
 
@@ -125,20 +137,29 @@ function App() {
             await updateDoc(itemRef, updatedItem);
             setEditingItem(null);
             setIsAddModalOpen(false);
+            showNotification("Data barang berhasil diperbarui", "success");
         } catch (error) {
             console.error("Error updating item:", error);
-            alert("Gagal mengupdate barang");
+            showNotification("Gagal mengupdate barang", "error");
         }
     };
 
-    const handleDeleteItem = async (id) => {
-        if (window.confirm('Apakah Anda yakin ingin menghapus barang ini?')) {
-            try {
-                await deleteDoc(doc(db, 'inventory', id));
-            } catch (error) {
-                console.error("Error deleting item:", error);
-                alert("Gagal menghapus barang");
-            }
+    // Trigger Delete Modal
+    const handleDeleteItem = (id) => {
+        setDeleteConfig({ isOpen: true, itemId: id });
+    };
+
+    // Actual Delete Logic
+    const confirmDelete = async () => {
+        if (!deleteConfig.itemId) return;
+
+        try {
+            await deleteDoc(doc(db, 'inventory', deleteConfig.itemId));
+            showNotification("Barang berhasil dihapus permanen", "success");
+            setDeleteConfig({ isOpen: false, itemId: null });
+        } catch (error) {
+            console.error("Error deleting item:", error);
+            showNotification("Gagal menghapus barang", "error");
         }
     };
 
@@ -151,6 +172,7 @@ function App() {
             await updateDoc(doc(db, 'inventory', id), { quantity: newQuantity });
         } catch (error) {
             console.error("Error updating stock:", error);
+            showNotification("Gagal update stok", "error");
         }
     };
 
@@ -158,12 +180,14 @@ function App() {
     const handleAddCategory = (newCat) => {
         if (!categories.includes(newCat)) {
             setCategories([...categories, newCat]);
+            showNotification("Kategori baru ditambahkan", "success");
         }
     };
 
     const handleDeleteCategory = (catToDelete) => {
         setCategories(categories.filter(c => c !== catToDelete));
         if (currentCategory === catToDelete) setCurrentCategory('Semua');
+        showNotification("Kategori dihapus", "success");
     };
 
     // Filter Logic
@@ -191,6 +215,15 @@ function App() {
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20">
+            {notification && (
+                <Notification
+                    key={notification.id}
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={() => setNotification(null)}
+                />
+            )}
+
             <Header totalItems={totalItems} lowStockCount={lowStockCount} onLogout={handleLogout} />
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -238,6 +271,14 @@ function App() {
                 onAddItems={handleAiAddItem}
             />
 
+            <ConfirmationModal
+                isOpen={deleteConfig.isOpen}
+                onClose={() => setDeleteConfig({ isOpen: false, itemId: null })}
+                onConfirm={confirmDelete}
+                title="Hapus Barang?"
+                message="Tindakan ini tidak dapat dibatalkan. Barang akan dihapus permanen dari database."
+            />
+
             <CategoryManagerModal
                 isOpen={isCategoryModalOpen}
                 onClose={() => setIsCategoryModalOpen(false)}
@@ -250,4 +291,3 @@ function App() {
 }
 
 export default App;
-

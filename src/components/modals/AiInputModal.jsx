@@ -44,17 +44,17 @@ const AiInputModal = ({ isOpen, onClose, onAddItems }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
-                <div className="bg-purple-600 p-6 text-white flex justify-between items-start">
+                <div className="bg-gradient-to-r from-primary to-red-800 p-6 text-white flex justify-between items-start">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
-                            <Sparkles size={24} className="text-purple-200" />
+                            <Sparkles size={24} className="text-yellow-300" />
                             <h2 className="text-xl font-bold">AI Input Assistant</h2>
                         </div>
-                        <p className="text-purple-100 text-sm">
+                        <p className="text-red-100 text-sm">
                             Deskripsikan barang yang ingin ditambahkan, AI akan mengisi detailnya otomatis.
                         </p>
                     </div>
-                    <button onClick={handleClose} className="text-purple-200 hover:text-white transition-colors">
+                    <button onClick={handleClose} className="text-red-200 hover:text-white transition-colors">
                         <X size={24} />
                     </button>
                 </div>
@@ -107,7 +107,7 @@ const AiInputModal = ({ isOpen, onClose, onAddItems }) => {
                             <button
                                 onClick={handleProcess}
                                 disabled={loading || !input.trim()}
-                                className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-medium transition-all shadow-lg shadow-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
                                 Proses dengan AI

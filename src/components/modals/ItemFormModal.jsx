@@ -35,11 +35,11 @@ const ItemFormModal = ({ isOpen, onClose, onSubmit, initialData, categories = []
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-                <div className="flex justify-between items-center p-6 border-b border-slate-100">
-                    <h2 className="text-lg font-bold text-slate-800">
+                <div className="flex justify-between items-center p-6 bg-gradient-to-r from-primary to-red-800 text-white">
+                    <h2 className="text-xl font-bold">
                         {initialData ? 'Edit Barang' : 'Tambah Barang Baru'}
                     </h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+                    <button onClick={onClose} className="text-red-100 hover:text-white transition-colors bg-white/10 p-1 rounded-full hover:bg-white/20">
                         <X size={20} />
                     </button>
                 </div>
