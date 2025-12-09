@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(API_KEY);
 
 export const parseInventoryInput = async (text) => {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `
       Extract inventory item details from the following text. 
       Return ONLY a JSON object with these fields: 
