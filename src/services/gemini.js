@@ -7,11 +7,14 @@ export const parseInventoryInput = async (text) => {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const prompt = `
-      Extract inventory item details from the following text. 
-      Return ONLY a JSON object with these fields: 
-      - name (string)
+      Analyze the following text to extract inventory item details.
+      
+      If the text is conversational, random (e.g., "halo", "apa kabar"), or does not clearly describe an inventory item/transaction, return the JSON value: null.
+
+      Otherwise, return ONLY a JSON object with these fields: 
+      - name (string, required)
       - category (string, try to match one of: ATK, Pantry, Elektronik, Aset, Lainnya. Default to Lainnya if unsure)
-      - quantity (number. IMPORTANT: Make this NEGATIVE if the text implies removing, taking, or using items. Example: "ambil 5" -> -5, "barang keluar 2" -> -2)
+      - quantity (number, required. IMPORTANT: Make this NEGATIVE if the text implies removing, taking, or using items. Example: "ambil 5" -> -5, "barang keluar 2" -> -2)
       - unit (string, e.g., Pcs, Rim, Unit, Box)
       - minStock (number, default to 5 if not specified)
       
@@ -24,7 +27,13 @@ export const parseInventoryInput = async (text) => {
 
         // Clean up markdown code blocks if present
         const jsonStr = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(jsonStr);
+        const parsedData = JSON.parse(jsonStr);
+
+        if (!parsedData || !parsedData.name) {
+            throw new Error("Invalid input format");
+        }
+
+        return parsedData;
     } catch (error) {
         console.error("Error parsing with Gemini:", error);
         throw error;

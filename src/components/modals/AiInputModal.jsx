@@ -21,7 +21,7 @@ const AiInputModal = ({ isOpen, onClose, onAddItems }) => {
             const data = await parseInventoryInput(input);
             setResult(data);
         } catch (err) {
-            setError('Gagal memproses input. Pastikan format teks jelas atau coba lagi.');
+            setError('Gagal memproses input. Format tidak dikenali.');
         } finally {
             setLoading(false);
         }
