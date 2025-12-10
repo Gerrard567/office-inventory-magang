@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
 const DEFAULT_CATEGORIES = ['ATK', 'Pantry', 'Elektronik', 'Aset', 'Lainnya'];
@@ -23,12 +23,16 @@ export const useInventory = (user) => {
             return;
         }
 
-        const q = query(collection(db, 'inventory'), orderBy('name'));
+        const q = query(
+            collection(db, 'inventory'),
+            where('userId', '==', user.uid)
+        );
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const itemsData = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
-            }));
+            })).sort((a, b) => a.name.localeCompare(b.name));
+
             setItems(itemsData);
             setLoading(false);
         }, (error) => {
@@ -43,7 +47,7 @@ export const useInventory = (user) => {
     // Add Item
     const addItem = async (newItem) => {
         try {
-            await addDoc(collection(db, 'inventory'), newItem);
+            await addDoc(collection(db, 'inventory'), { ...newItem, userId: user.uid });
             showNotification(`Barang "${newItem.name}" berhasil ditambahkan!`, "success");
             return true;
         } catch (error) {
@@ -74,7 +78,7 @@ export const useInventory = (user) => {
                 const action = quantityChange > 0 ? "ditambahkan ke" : "dikurangi dari";
                 showNotification(`Stok barang "${existingItem.name}" berhasil ${action} inventaris.`, "success");
             } else {
-                await addDoc(collection(db, 'inventory'), newItem);
+                await addDoc(collection(db, 'inventory'), { ...newItem, userId: user.uid });
                 showNotification(`Barang baru "${newItem.name}" berhasil dibuat!`, "success");
             }
             return true;

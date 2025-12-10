@@ -27,9 +27,13 @@ const AiInputModal = ({ isOpen, onClose, onAddItems }) => {
         }
     };
 
-    const handleAdd = () => {
-        if (result) {
-            onAddItems(result);
+    const handleAdd = async () => {
+        if (result && Array.isArray(result)) {
+            setLoading(true);
+            for (const item of result) {
+                await onAddItems(item);
+            }
+            setLoading(false);
             handleClose();
         }
     };
@@ -79,25 +83,39 @@ const AiInputModal = ({ isOpen, onClose, onAddItems }) => {
                     )}
 
                     {result && (
-                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 animate-in slide-in-from-top-2">
-                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Preview Hasil</h3>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <span className="text-slate-400 block text-xs">Nama</span>
-                                    <span className="font-medium text-slate-800">{result.name}</span>
-                                </div>
-                                <div>
-                                    <span className="text-slate-400 block text-xs">Kategori</span>
-                                    <span className="font-medium text-slate-800">{result.category}</span>
-                                </div>
-                                <div>
-                                    <span className="text-slate-400 block text-xs">Jumlah</span>
-                                    <span className="font-medium text-slate-800">{result.quantity} {result.unit}</span>
-                                </div>
-                                <div>
-                                    <span className="text-slate-400 block text-xs">Min. Stok</span>
-                                    <span className="font-medium text-slate-800">{result.minStock}</span>
-                                </div>
+                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 animate-in slide-in-from-top-2 max-h-60 overflow-y-auto custom-scrollbar">
+                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Preview Hasil ({result.length} Item)</h3>
+                            <div className="space-y-3">
+                                {result.map((item, index) => (
+                                    <div key={index} className="bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <span className="font-semibold text-slate-800 text-sm">Item {index + 1}</span>
+                                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${item.quantity >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                {item.quantity >= 0 ? 'Masuk' : 'Keluar'}
+                                            </span>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                            <div>
+                                                <span className="text-slate-400 block text-[10px] uppercase">Nama</span>
+                                                <span className="font-medium text-slate-800">{item.name}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-slate-400 block text-[10px] uppercase">Kategori</span>
+                                                <span className="font-medium text-slate-800">{item.category}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-slate-400 block text-[10px] uppercase">Jumlah</span>
+                                                <span className={`font-medium ${item.quantity >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {item.quantity >= 0 ? '+' : ''}{item.quantity} {item.unit}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-slate-400 block text-[10px] uppercase">Min. Stok</span>
+                                                <span className="font-medium text-slate-800">{item.minStock}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}

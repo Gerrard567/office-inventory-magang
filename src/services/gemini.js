@@ -11,7 +11,7 @@ export const parseInventoryInput = async (text) => {
       
       If the text is conversational, random (e.g., "halo", "apa kabar"), or does not clearly describe an inventory item/transaction, return the JSON value: null.
 
-      Otherwise, return ONLY a JSON object with these fields: 
+      Otherwise, return a JSON ARRAY of objects (even if only one item) with these fields: 
       - name (string, required)
       - category (string, try to match one of: ATK, Pantry, Elektronik, Aset, Lainnya. Default to Lainnya if unsure)
       - quantity (number, required. IMPORTANT: Make this NEGATIVE if the text implies removing, taking, or using items. Example: "ambil 5" -> -5, "barang keluar 2" -> -2)
@@ -29,7 +29,11 @@ export const parseInventoryInput = async (text) => {
         const jsonStr = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
         const parsedData = JSON.parse(jsonStr);
 
-        if (!parsedData || !parsedData.name) {
+        if (parsedData === null) {
+            throw new Error("Invalid input format");
+        }
+
+        if (!Array.isArray(parsedData) || parsedData.length === 0 || !parsedData[0].name) {
             throw new Error("Invalid input format");
         }
 

@@ -1,9 +1,9 @@
 import React from 'react';
-import { LayoutGrid, Box, AlertTriangle, LogOut } from 'lucide-react';
+import { LayoutGrid, Box, AlertTriangle, LogOut, User } from 'lucide-react';
 
 import logo from '../../assets/pdam_logo.png';
 
-const Header = ({ totalItems, lowStockCount, onLogout }) => {
+const Header = ({ user, totalItems, lowStockCount, onLogout }) => {
     return (
         <header className="bg-white border-b border-slate-200 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-3">
@@ -15,6 +15,13 @@ const Header = ({ totalItems, lowStockCount, onLogout }) => {
             </div>
 
             <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
+                    <User size={18} className="text-slate-500" />
+                    <span className="text-sm font-medium text-slate-700">{user?.email || 'User'}</span>
+                </div>
+
+                <div className="h-6 w-px bg-slate-200 mx-1"></div>
+
                 <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full shadow-sm">
                     <Box size={18} className="text-primary" />
                     <span className="text-sm font-medium text-slate-600">Total: {totalItems}</span>
